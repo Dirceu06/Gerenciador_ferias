@@ -6,10 +6,10 @@ from app.core.database.opDB import Banco
 class HomePage:
     def __init__(self, page: ft.Page):
         self.page = page
-        self.page.on_resize = lambda e: self.grid.update()
         self.banco = Banco()
         self.botao=False
         self.build_ui()
+        self.page.on_resize = lambda e: self.grid.update()
     
     def toggle_botao(self, e):
         self.botao = not self.botao
@@ -33,7 +33,7 @@ class HomePage:
         self.sites = self.banco.lerReg()
         exibir = []
         for s in self.sites:
-            reg = {'id': f'{s[0]}','titulo': f'{s[1]}','dominio': f'{s[2]}','usuario': f'{s[3]}','senha': f'{s[4]}','data_criacao': f'{s[5]}'}
+            reg = {'id': s[0],'titulo': f'{s[1]}','dominio': f'{s[2]}','usuario': f'{s[3]}','senha': f'{s[4]}','data_criacao': f'{s[5]}'}
             exibir.append(reg)
             
         #GRID
@@ -48,8 +48,10 @@ class HomePage:
         #atribuindo cards
         for site in exibir:
             card = PasswordCard(
+                id=site['id'],
                 title=site["titulo"],
-                on_click=lambda name: self.abrir_detalhes(name),domain=f"{site["dominio"].lower()}"
+                on_click=lambda name: self.abrir_detalhes(name),domain=f"{site["dominio"].lower()}",
+                delete=self.deletar_registro
             ).build()
 
             self.grid.controls.append(card)
@@ -169,7 +171,7 @@ class HomePage:
         exibir = []
         for s in sites:
             reg = {
-                'id': f'{s[0]}',
+                'id': s[0],
                 'titulo': f'{s[1]}',
                 'dominio': f'{s[2]}',
                 'usuario': f'{s[3]}',
@@ -180,9 +182,11 @@ class HomePage:
         
         for site in exibir:
             card = PasswordCard(
+                id=site['id'],
                 title=site["titulo"],
                 on_click=lambda name: self.abrir_detalhes(name),
-                domain=f"{site['dominio'].lower()}"
+                domain=f"{site['dominio'].lower()}",
+                delete=self.deletar_registro
             ).build()
             self.grid.controls.append(card)
         
@@ -211,4 +215,13 @@ class HomePage:
             self.page.update()
         else:
             state.show_snackbar('Erro ao salvar login!')
-            
+
+    def deletar_registro(self, registro_id):
+        """Deleta um registro específico"""
+        try:
+            self.banco.deletarReg(registro_id)
+            state.show_snackbar(f"'{registro_id}' deletado com sucesso!")
+            self.atualizar_grid() 
+        except Exception as e:
+            print(f"Erro: {e}")
+            state.show_snackbar(f"Erro ao deletar '{registro_id}'")
