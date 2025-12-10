@@ -1,3 +1,19 @@
-/.venv
+# Banco de dados
+*.db
+*.db-journal
+
+# Chaves de criptografia
+*.key
+
+# Arquivos específicos do seu projeto
+/app/core/database/dadosUser/reg.db
+/app/core/database/dadosUser/blob.key
 /keys.txt
-/__pycache__
+
+# Ambiente virtual
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc

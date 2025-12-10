@@ -18,7 +18,7 @@ def main(page: ft.Page):
     
     # Sistema de rotas
     def route_change(e):
-        print(f"DEBUG: Navegando para {e.route}")
+        #print(f"DEBUG: Navegando para {e.route}")
         page.views.clear()
         
         if e.route == "/":
@@ -31,7 +31,7 @@ def main(page: ft.Page):
             page.views.append(home_page.build())
         
         page.update()
-    page.on_resize = lambda e: page.update()
+    page.on_resized = lambda e: page.update()
     page.on_route_change = route_change
 
     page.go("/")

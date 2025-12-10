@@ -90,7 +90,7 @@ class LoginPage:
         usuario = self.user_input.value
         senha = self.pass_input.value
         
-        print(f"DEBUG: Tentando login - Usuário: {usuario}, Senha: {senha}")
+        #print(f"DEBUG: Tentando login - Usuário: {usuario}, Senha: {senha}")
         
         # Lógica simples de validação (igual você tinha)
         if usuario == "admin" and senha == "123":
