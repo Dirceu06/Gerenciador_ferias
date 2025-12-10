@@ -1,0 +1,5 @@
+flet==0.25.1
+requests
+sqlalchemy
+sqlite-utils
+cryptography
