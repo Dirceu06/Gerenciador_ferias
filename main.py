@@ -5,9 +5,9 @@ def main(page: ft.Page):
     # Configuração da página
     page.title = "Tracker de preços"
     page.theme_mode = ft.ThemeMode.DARK
+    page.window.maximized=True
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.window.full_screen = False
     page.window.min_width = 800 
     page.window.min_height = 600
     page.window.width=1000

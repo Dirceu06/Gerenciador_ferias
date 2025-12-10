@@ -15,30 +15,41 @@ class PasswordCard:
     def _build_card(self):
         icon_url = f"https://img.logo.dev/{self.domain}?token={self.key}&theme=dark&format=png&size=500"
 
-        self.card = ft.Container(
-        content=ft.Column([
-            ft.Container(
-                content=ft.Image(
-                    src=icon_url,
-                    width=float("inf"),
-                    height=150,
-                    fit=ft.ImageFit.CONTAIN,
-                ),
-                clip_behavior=ft.ClipBehavior.HARD_EDGE,
-                margin=10
+        self.card = ft.Card(
+        content=ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Image(
+                        src=icon_url,
+                        width=120,
+                        height=120,
+                        fit=ft.ImageFit.CONTAIN,
+                    ),
+                    ft.Text(
+                        self.title,
+                        size=16,
+                        weight=ft.FontWeight.BOLD,
+                        text_align=ft.TextAlign.CENTER,
+                    ),
+                    ft.Row(
+                        controls=[
+                            ft.TextButton("Detalhes", on_click=self._on_card_click),
+                            ft.FilledButton(
+                                "Excluir",
+                                icon=ft.icons.DELETE,
+                                on_click=self.deletarCard,
+                                bgcolor=ft.colors.RED_600,
+                                color=ft.colors.WHITE
+                            )
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,
+                    )
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            ft.Container(
-                content=ft.Column([
-                    ft.Text(self.title, size=16, weight=ft.FontWeight.BOLD),
-                    ft.Text(self.domain, size=12, color=ft.colors.GREY_600),
-                    ft.ResponsiveRow(controls=[ft.TextButton("Excluir", on_click=self.deletarCard),ft.TextButton("Detalhes", on_click=self._on_card_click)])
-                ], spacing=8),
-                padding=15,
-            )
-        ], spacing=0),
-        width=float("inf"),
-        border_radius=10,
-        bgcolor=ft.colors.with_opacity(0.05, ft.colors.WHITE)
+            padding=20,
+            width=300,
+        ),
     )
 
 

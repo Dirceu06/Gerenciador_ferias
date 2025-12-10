@@ -40,7 +40,7 @@ class HomePage:
         self.grid = ft.GridView(
             expand=True,
             max_extent=300,   # largura máxima por card
-            child_aspect_ratio=260 / 300,
+            child_aspect_ratio=1,
             spacing=20,
             run_spacing=20,
         )
