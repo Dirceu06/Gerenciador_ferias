@@ -17,3 +17,5 @@ venv/
 # Python cache
 __pycache__/
 *.pyc
+app/core/database/dadosUser/blob.key
+app/core/database/dadosUser/reg.db
