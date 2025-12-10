@@ -3,7 +3,7 @@ from cryptography.fernet import Fernet
 
 class Banco:
     def __init__(self):
-        self.banco = sqlite3.connect("app/core/database/dadosUser/reg.db")
+        self.banco = sqlite3.connect("app/core/database/dadosUser/reg.db",check_same_thread=False)
         self.cursor = self.banco.cursor()
         self.key = self.gerarKey()
         self.fer = Fernet(self.key)
@@ -69,7 +69,7 @@ class Banco:
         registro = self.cursor.fetchall()
         resultado = []
         for reg in registro:
-            tu = (reg[0],reg[1],reg[2],reg[3],self.descriptografar(reg[4]))
+            tu = (reg[0],reg[1],reg[2],reg[3],self.descriptografar(reg[4]),reg[5])
             resultado.append(tu)
         return resultado
                 
@@ -79,8 +79,6 @@ class Banco:
     def criptografar(self,senha:str):
         return self.fer.encrypt(senha.encode())
 
-    def deletarReg(self,*reg):
-        placeholder = '?'
-        for i in range(len(reg)-1):
-            placeholder+=',?'
-        self.banco.execute(f"""Delete from reg where id in ({placeholder})""",reg)
+    def deletarReg(self,reg):
+        self.cursor.execute(f"""Delete from reg where id == ?""",(reg,))
+        self.banco.commit()
