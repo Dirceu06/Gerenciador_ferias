@@ -2,21 +2,17 @@ import flet as ft
 from app.ui.app_state import state
 
 def main(page: ft.Page):
-    # Configuração da página
-    page.title = "Tracker de preços"
+    page.title = "Gerenciador de senhas"
     page.theme_mode = ft.ThemeMode.DARK
     page.window.maximized=True
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.window.min_width = 800 
     page.window.min_height = 600
-    page.window.width=1000
-    page.window.height=600
-    
-    # Configura o estado global
+    #configura o estado globala
     state.set_page(page)
     
-    # Sistema de rotas
+    #rotas
     def route_change(e):
         #print(f"DEBUG: Navegando para {e.route}")
         page.views.clear()

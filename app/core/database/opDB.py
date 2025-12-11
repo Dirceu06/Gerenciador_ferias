@@ -58,19 +58,30 @@ class Banco:
         self.banco.commit()
         return True
         
-    def lerReg(self):
-        self.cursor.execute("""
-            SELECT id, titulo, dominio, usuario, 
-                senha_criptografada, 
-                datetime(data_criacao) as data_criacao
-            FROM reg 
-            ORDER BY data_criacao DESC
-        """)
+    def lerReg(self,condicao=False,pesquisa=''):
+        if not condicao:
+            self.cursor.execute("""
+                SELECT id, titulo, dominio, usuario, 
+                    senha_criptografada, 
+                    datetime(data_criacao) as data_criacao
+                FROM reg 
+                ORDER BY data_criacao DESC
+            """)
+        else:
+            self.cursor.execute("""
+                SELECT id, titulo, dominio, usuario, 
+                    senha_criptografada, 
+                    datetime(data_criacao) as data_criacao
+                FROM reg where dominio like ?
+                ORDER BY data_criacao DESC
+            """,(f'%{pesquisa}%',))
+        
         registro = self.cursor.fetchall()
         resultado = []
         for reg in registro:
             tu = (reg[0],reg[1],reg[2],reg[3],self.descriptografar(reg[4]),reg[5])
             resultado.append(tu)
+        
         return resultado
                 
     def descriptografar(self,senhaCrip):
@@ -81,4 +92,8 @@ class Banco:
 
     def deletarReg(self,reg):
         self.cursor.execute(f"""Delete from reg where id == ?""",(reg,))
+        self.banco.commit()
+    
+    def update(self,id,titulo,dominio,usuario,senha):
+        self.cursor.execute("""update reg set titulo=?, dominio=?, usuario=?, senha_criptografada=? where id=?;""", (titulo,dominio,usuario,self.criptografar(senha),id))
         self.banco.commit()

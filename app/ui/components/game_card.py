@@ -1,9 +1,11 @@
 import flet as ft
 from app.core.database.opDB import Banco
 class PasswordCard:
-    def __init__(self, title, domain, id, on_click=None, width=260, height=300,delete=None):
+    def __init__(self, title, domain,senha,usuario, id, on_click=None, width=260, height=300,delete=None):
         self.title = title
         self.domain = domain
+        self.senha = senha
+        self.usuario = usuario
         self.id=id
         self.on_click = on_click
         self.delete = delete
@@ -24,12 +26,22 @@ class PasswordCard:
                         width=120,
                         height=120,
                         fit=ft.ImageFit.CONTAIN,
+                        
                     ),
                     ft.Text(
                         self.title,
                         size=16,
                         weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER,
+                        overflow=ft.TextOverflow.FADE,
+                        max_lines=1
+                    ),
+                    ft.Text(
+                        self.domain,
+                        size=16,
+                        weight=ft.FontWeight.BOLD,
+                        text_align=ft.TextAlign.CENTER,
+                        overflow=ft.TextOverflow.FADE
                     ),
                     ft.Row(
                         controls=[
@@ -43,22 +55,25 @@ class PasswordCard:
                             )
                         ],
                         alignment=ft.MainAxisAlignment.CENTER,
+                        
                     )
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            padding=20,
-            width=300,
+            width=self.width,
+            padding=8,
+            height=self.height,
+            bgcolor=ft.colors.BLACK12,
+            border_radius=10
         ),
     )
 
 
     def _on_card_click(self, e):
         if self.on_click:
-            self.on_click(self.title)
+            self.on_click(self.id, self.title,self.domain, self.usuario, self.senha)
             
     def deletarCard(self, e):
-        self.banco = Banco()
         self.delete(self.id)
         
     def build(self):
