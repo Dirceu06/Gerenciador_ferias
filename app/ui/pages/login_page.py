@@ -1,5 +1,6 @@
 import flet as ft
 from app.ui.app_state import state  # Importa o estado global
+from app.core.database.verificacao import Verifica
 
 class LoginPage:
     def __init__(self, page: ft.Page):
@@ -29,8 +30,17 @@ class LoginPage:
             "Entrar",
             icon=ft.icons.LOGIN,
             on_click=self.tentar_login,  # Método separado!
-            width=250,
-            height=45
+            
+            
+        )
+        
+        # Botão de criar cad
+        self.criarCad_btn = ft.ElevatedButton(
+            "Criar",
+            icon=ft.icons.PERSON_ADD,
+            on_click=self.criarCad,  # Método separado!
+            
+            
         )
         
         # Container do card
@@ -42,7 +52,7 @@ class LoginPage:
             bgcolor=ft.colors.with_opacity(0.1, ft.colors.WHITE),
             content=ft.Column(
                 [
-                    ft.Text("Login", 
+                    ft.Text("Faça o login ou realize seu cadastro", 
                            size=24, 
                            weight=ft.FontWeight.BOLD,
                            text_align=ft.TextAlign.CENTER),
@@ -54,9 +64,7 @@ class LoginPage:
                     
                     ft.Container(height=10),
                     
-                    self.login_btn,
-                    
-                    # Link para "esqueci senha" (futuro)
+                    ft.Row(controls=[self.login_btn,self.criarCad_btn],width=300,height=45),
                     ft.TextButton(
                         "Esqueci a senha",
                         on_click=lambda e: state.show_snackbar("Funcionalidade em desenvolvimento!"),
@@ -90,17 +98,27 @@ class LoginPage:
         usuario = self.user_input.value
         senha = self.pass_input.value
         
-        #print(f"DEBUG: Tentando login - Usuário: {usuario}, Senha: {senha}")
+        verifi = Verifica(usuario,senha)
         
-        # Lógica simples de validação (igual você tinha)
-        if usuario == "admin" and senha == "123":
+        if verifi.verificaLogin():
             state.show_snackbar("✅ Login realizado com sucesso!")
-            
-            # Navega para a próxima página
             self.page.go("/home")
         else:
             state.show_snackbar("❌ Usuário ou senha incorretos!", is_error=True)
-            
-            # Limpa os campos de senha
             self.pass_input.value = ""
             self.pass_input.update()
+            
+    def criarCad(self,e):
+        usuario = self.user_input.value
+        senha = self.pass_input.value
+        if usuario == '' or senha == '':
+            state.show_snackbar('preencha os campos!!!',True)
+            return
+        verifi = Verifica(usuario,senha)
+        
+        
+        if verifi.criarLogin(senha,usuario) == False:
+            state.show_snackbar('Login já existente!!!',True)
+        else:
+            state.show_snackbar('login criado, insira para começar seu gerenciador!!!')
+        

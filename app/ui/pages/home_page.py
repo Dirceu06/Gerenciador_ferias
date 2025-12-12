@@ -250,6 +250,8 @@ class HomePage:
                 prefix_icon=ft.icons.LOCK,
                 col={"sm": 9, "md": 11},
                 width=None,
+                password=True,
+                can_reveal_password=True
             ),
             ft.Container(
                 content=ft.IconButton(
