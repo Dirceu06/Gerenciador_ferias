@@ -30,6 +30,7 @@ class LoginPage:
             "Entrar",
             icon=ft.icons.LOGIN,
             on_click=self.tentar_login,  # Método separado!
+            width=120
             
             
         )
@@ -39,7 +40,7 @@ class LoginPage:
             "Criar",
             icon=ft.icons.PERSON_ADD,
             on_click=self.criarCad,  # Método separado!
-            
+            width=120
             
         )
         
@@ -64,7 +65,7 @@ class LoginPage:
                     
                     ft.Container(height=10),
                     
-                    ft.Row(controls=[self.login_btn,self.criarCad_btn],width=300,height=45),
+                    ft.ResponsiveRow(controls=[self.login_btn,self.criarCad_btn]),
                     ft.TextButton(
                         "Esqueci a senha",
                         on_click=lambda e: state.show_snackbar("Funcionalidade em desenvolvimento!"),

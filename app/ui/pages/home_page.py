@@ -9,7 +9,8 @@ class HomePage:
         self.banco = Banco()
         self.botao=False
         self.build_ui()
-        self.page.on_resize = lambda e: self.grid.update()
+        self.page.on_resize = lambda e: self.page.update()
+        
     
     def toggle_botao(self, e):
         self.botao = not self.botao
@@ -75,23 +76,25 @@ class HomePage:
             icon=ft.icons.ADD,
             icon_color=ft.colors.WHITE,
             bgcolor=ft.colors.BLUE_900,
-            on_click=self.toggle_botao
+            on_click=self.toggle_botao,
+            alignment=ft.alignment.center_right
         )
-
         
+        #botão logout
+        self.logout_btn = ft.IconButton(icon=ft.icons.LOGOUT_OUTLINED,icon_color=ft.colors.RED_700,bgcolor=ft.colors.BLACK38,on_click=self.logout,alignment=ft.alignment.center_left)
+
         #conteudo
         self.content = ft.Container(
             content=ft.Column([
                 ft.ResponsiveRow([self.barra_pesquisa],alignment=ft.MainAxisAlignment.CENTER),
                 ft.Text("Gerenciador de Senhas", size=28, weight="bold"),
                 self.grid,
-                ft.Row([self.adicionar_btn],alignment=ft.MainAxisAlignment.END)
+                ft.Row([self.logout_btn, ft.Container(expand=True), self.adicionar_btn],alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
             ], expand=True),
             expand=True,
             padding=30,
             visible=True
         )
-        
         
         self.pop_up_inserir()  # 1. Criar o popup
         self.content.content.controls.insert(-1, self.pop_container)  # 2. Adicionar ao layout
@@ -419,3 +422,7 @@ class HomePage:
     def pesquisar(self,e):
         pesquisa = self.barra_pesquisa.value
         self.atualizar_grid(True,pesquisa)
+        
+    def logout(self,e):
+        self.banco.logout()
+        self.page.go("/")

@@ -99,3 +99,18 @@ class Banco:
         self.cursorReg.execute("""update reg set titulo=?, dominio=?, usuario=?, senha_criptografada=? where id=?;""", (titulo,dominio,usuario,self.criptografar(senha),id))
         self.banco.commit()
         
+    def logout(self):
+        # fecha o banco com segurança
+        try:
+            if self.banco:
+                self.banco.commit()
+                self.banco.close()
+        except Exception:
+            pass
+
+        self.cursorReg = None
+        self.banco = None
+        self.fer = None
+        self.key = None
+        Banco._initialized = False
+        Banco._instance = None
