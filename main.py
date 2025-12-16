@@ -2,6 +2,7 @@ import flet as ft
 from app.ui.app_state import state
 
 def main(page: ft.Page):
+    page.window.icon = "app/assets/icon.ico" #não funciona
     page.title = "Gerenciador de senhas"
     page.theme_mode = ft.ThemeMode.DARK
     page.window.maximized=True
