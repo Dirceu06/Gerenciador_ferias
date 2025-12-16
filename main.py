@@ -25,6 +25,10 @@ def main(page: ft.Page):
             from app.ui.pages.home_page import HomePage
             home_page = HomePage(page)
             page.views.append(home_page.build())
+        elif e.route == "/lixeira":
+            from app.ui.pages.lixeira_page import Historico
+            lixo = Historico(page)
+            page.views.append(lixo.build())
         
         page.update()
     page.on_resized = lambda e: page.update()

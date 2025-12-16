@@ -1,7 +1,7 @@
 import flet as ft
 from app.core.database.opDB import Banco
 class PasswordCard:
-    def __init__(self, title, domain,senha,usuario, id, on_click=None, width=260, height=300,delete=None):
+    def __init__(self, title, domain,senha,usuario, id, on_click=None, width=260, height=300,delete=None,lixo=False):
         self.title = title
         self.domain = domain
         self.senha = senha
@@ -12,6 +12,7 @@ class PasswordCard:
         self.width = width
         self.height = height
         self.key = retirarKeys()[0]
+        self.lixo=lixo
         self._build_card()
 
     def _build_card(self):
@@ -45,9 +46,9 @@ class PasswordCard:
                     ),
                     ft.Row(
                         controls=[
-                            ft.TextButton("Detalhes", on_click=self._on_card_click),
+                            ft.TextButton(text='Detalhes' if not self.lixo else 'Restaurar', on_click=self._on_card_click),
                             ft.FilledButton(
-                                "Excluir",
+                                text='Lixeira' if not self.lixo else 'Remover',
                                 icon=ft.icons.DELETE,
                                 on_click=self.deletarCard,
                                 bgcolor=ft.colors.RED_600,
@@ -71,7 +72,10 @@ class PasswordCard:
 
     def _on_card_click(self, e):
         if self.on_click:
-            self.on_click(self.id, self.title,self.domain, self.usuario, self.senha)
+            if self.lixo:
+                self.on_click(self.id)
+            else:
+                self.on_click(self.id, self.title,self.domain, self.usuario, self.senha)
             
     def deletarCard(self, e):
         self.delete(self.id)

@@ -53,7 +53,7 @@ class LoginPage:
             bgcolor=ft.colors.with_opacity(0.1, ft.colors.WHITE),
             content=ft.Column(
                 [
-                    ft.Text("Faça o login ou realize seu cadastro", 
+                    ft.Text("Faça o login\n ou \nrealize seu cadastro", 
                            size=24, 
                            weight=ft.FontWeight.BOLD,
                            text_align=ft.TextAlign.CENTER),

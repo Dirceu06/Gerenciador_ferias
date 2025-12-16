@@ -11,7 +11,6 @@ class HomePage:
         self.build_ui()
         self.page.on_resize = lambda e: self.page.update()
         
-    
     def toggle_botao(self, e):
         self.botao = not self.botao
 
@@ -81,18 +80,33 @@ class HomePage:
         )
         
         #botão logout
-        self.logout_btn = ft.IconButton(icon=ft.icons.LOGOUT_OUTLINED,icon_color=ft.colors.RED_700,bgcolor=ft.colors.BLACK38,on_click=self.logout,alignment=ft.alignment.center_left)
+        self.logout_btn = ft.IconButton(
+            icon=ft.icons.LOGOUT_OUTLINED,
+            icon_color=ft.colors.RED_700,
+            bgcolor=ft.colors.BLACK38,
+            on_click=self.logout,
+            alignment=ft.alignment.center_left
+        )
 
+        #botão lixeira
+        self.lixeira = ft.Container(
+            content=ft.IconButton(
+            icon=ft.icons.DELETE_OUTLINE,
+            icon_color=ft.colors.GREY_200,
+            bgcolor=ft.colors.GREY_700,
+            on_click=self.historico,
+        ),margin=ft.margin.only(right=12),alignment=ft.alignment.center_right)
+        
         #conteudo
         self.content = ft.Container(
             content=ft.Column([
                 ft.ResponsiveRow([self.barra_pesquisa],alignment=ft.MainAxisAlignment.CENTER),
-                ft.Text("Gerenciador de Senhas", size=28, weight="bold"),
+                ft.Text(f"Senhas de {self.banco.login}", size=28, weight="bold"),
                 self.grid,
-                ft.Row([self.logout_btn, ft.Container(expand=True), self.adicionar_btn],alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+                ft.Row([self.logout_btn, ft.Container(expand=True), self.lixeira, self.adicionar_btn],alignment=ft.MainAxisAlignment.SPACE_BETWEEN,spacing=40)
             ], expand=True),
             expand=True,
-            padding=30,
+            padding=20,
             visible=True
         )
         
@@ -410,14 +424,14 @@ class HomePage:
         self.page.update()
     
     def deletar_registro(self, registro_id):
-        """Deleta um registro específico"""
+        """Mandar para a lixeira um registro específico"""
         try:
             self.banco.deletarReg(registro_id)
-            state.show_snackbar(f"'{registro_id}' deletado com sucesso!")
+            state.show_snackbar(f"'{registro_id}' foi para lixeira!")
             self.atualizar_grid() 
         except Exception as e:
             print(f"Erro: {e}")
-            state.show_snackbar(f"Erro ao deletar '{registro_id}'")
+            state.show_snackbar(f"Erro ao  mandar '{registro_id}' para a lixeira")
     
     def pesquisar(self,e):
         pesquisa = self.barra_pesquisa.value
@@ -426,3 +440,6 @@ class HomePage:
     def logout(self,e):
         self.banco.logout()
         self.page.go("/")
+        
+    def historico(self,e):
+        self.page.go('/lixeira')

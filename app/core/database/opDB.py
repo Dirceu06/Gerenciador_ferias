@@ -4,6 +4,7 @@ from cryptography.fernet import Fernet
 class Banco:
     _instance = None  # SINGLETON
     _initialized = False
+    TABELAS_VALIDAS = {"reg","reg_deletados"}
     
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -13,6 +14,7 @@ class Banco:
     def __init__(self,login='',Chave=''):
         if Banco._initialized: return
         
+        self.login=login
         self.banco = sqlite3.connect(f"app/core/database/dadosUser/reg_{login}.db",check_same_thread=False)
         
         self.cursorReg = self.banco.cursor()
@@ -44,6 +46,8 @@ class Banco:
                 INSERT INTO reg_deletados (id, titulo, dominio, usuario, senha_criptografada,data_deletado)
                 VALUES (OLD.id, OLD.titulo, OLD.dominio, OLD.usuario, OLD.senha_criptografada, CURRENT_TIMESTAMP);
             END;
+            
+        
         """)
         
         self.banco.commit()
@@ -59,22 +63,27 @@ class Banco:
         self.banco.commit()
         return True
      
-    def lerReg(self,condicao=False,pesquisa=''):
+    def lerReg(self,condicao=False,pesquisa='',banco='reg'):
+        if banco not in self.TABELAS_VALIDAS:
+            return ValueError("Tabela inválida")
+
+        order= 'data_criacao' if banco=='reg' else 'data_deletado'    
+        
         if not condicao:
-            self.cursorReg.execute("""
+            self.cursorReg.execute(f"""
                 SELECT id, titulo, dominio, usuario, 
                     senha_criptografada, 
-                    datetime(data_criacao) as data_criacao
-                FROM reg 
-                ORDER BY data_criacao DESC
+                    datetime({order}) as {order}
+                FROM {banco} 
+                ORDER BY {order} DESC
             """)
         else:
-            self.cursorReg.execute("""
+            self.cursorReg.execute(f"""
                 SELECT id, titulo, dominio, usuario, 
                     senha_criptografada, 
-                    datetime(data_criacao) as data_criacao
-                FROM reg where dominio like ?
-                ORDER BY data_criacao DESC
+                    datetime({order}) as {order}
+                FROM {banco} where dominio like ?
+                ORDER BY {order} DESC
             """,(f'%{pesquisa}%',))
         
         registro = self.cursorReg.fetchall()
@@ -91,8 +100,8 @@ class Banco:
     def criptografar(self,senha:str):
         return self.fer.encrypt(senha.encode())
 
-    def deletarReg(self,reg):
-        self.cursorReg.execute(f"""Delete from reg where id == ?""",(reg,))
+    def deletarReg(self,id,banco='reg'):
+        self.cursorReg.execute(f"""Delete from {banco} where id == ?""",(id,))
         self.banco.commit()
     
     def update(self,id,titulo,dominio,usuario,senha):
@@ -114,3 +123,24 @@ class Banco:
         self.key = None
         Banco._initialized = False
         Banco._instance = None
+
+    def restaurar(self, id):
+        try:
+            self.banco.execute("BEGIN")
+
+            self.cursorReg.execute("""
+                INSERT INTO reg (titulo, dominio, usuario, senha_criptografada)
+                SELECT titulo, dominio, usuario, senha_criptografada
+                FROM reg_deletados
+                WHERE id = ?
+            """, (id,))
+
+            self.cursorReg.execute("""
+                DELETE FROM reg_deletados WHERE id = ?
+            """, (id,))
+
+            self.banco.commit()
+
+        except Exception:
+            self.banco.rollback()
+            raise
