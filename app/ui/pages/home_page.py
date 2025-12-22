@@ -256,7 +256,7 @@ class HomePage:
 
 
                 ft.ElevatedButton(
-                    "Exportar do Google",
+                    "Importar do Google",
                     icon=ft.icons.ATTACH_FILE,
                     width=250,
                     height=45,

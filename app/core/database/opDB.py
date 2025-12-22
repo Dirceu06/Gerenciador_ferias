@@ -1,5 +1,12 @@
 import sqlite3
 from cryptography.fernet import Fernet
+import os
+
+def get_user_db_path(login: str):
+    base = os.getenv("APPDATA")  # Windows
+    pasta = os.path.join(base, "GerenciadorSenhas", "users")
+    os.makedirs(pasta, exist_ok=True)
+    return os.path.join(pasta, f"reg_{login}.db")
 
 class Banco:
     _instance = None  # SINGLETON
@@ -15,7 +22,7 @@ class Banco:
         if Banco._initialized: return
         
         self.login=login
-        self.banco = sqlite3.connect(f"app/core/database/dadosUser/reg_{login}.db",check_same_thread=False)
+        self.banco = sqlite3.connect(get_user_db_path(login),check_same_thread=False)
         
         self.cursorReg = self.banco.cursor()
         self.key = Chave

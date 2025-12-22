@@ -11,12 +11,12 @@ class PasswordCard:
         self.delete = delete
         self.width = width
         self.height = height
-        self.key = retirarKeys()[0]
+        #self.key = retirarKeys()[0]
         self.lixo=lixo
         self._build_card()
 
     def _build_card(self):
-        icon_url = f"https://img.logo.dev/{self.domain}?token={self.key}&theme=dark&format=png&size=500"
+        icon_url = f"https://img.logo.dev/{self.domain}?token=pk_ZOpB240VSUGBfZoBNrGjHQ&theme=dark&format=png&size=500"
 
         self.card = ft.Card(
         content=ft.Container(
