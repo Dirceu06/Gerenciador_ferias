@@ -21,7 +21,6 @@ class Historico:
         #GRID
         self.grid = ft.GridView(
             expand=True,
-            
             max_extent=265,
             child_aspect_ratio=0.88,
             spacing=10,
@@ -55,8 +54,8 @@ class Historico:
         #botão logout
         self.logout_btn = ft.IconButton(
             icon=ft.icons.LOGOUT_OUTLINED,
-            icon_color=ft.colors.RED_700,
-            bgcolor=ft.colors.BLACK38,
+            icon_color=ft.colors.WHITE,
+            bgcolor=ft.colors.RED_700,
             on_click=self.logout,
             alignment=ft.alignment.center_left
         )

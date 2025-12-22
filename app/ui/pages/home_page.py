@@ -1,4 +1,6 @@
 import flet as ft
+import secrets
+import string
 from app.ui.app_state import state
 from app.ui.components.game_card import PasswordCard
 from app.core.database.opDB import Banco
@@ -6,14 +8,69 @@ from app.core.database.opDB import Banco
 class HomePage:
     def __init__(self, page: ft.Page):
         self.page = page
+        self.file_picker = ft.FilePicker(on_result=self._arquivoSelecionado)
+        self.page.overlay.append(self.file_picker)
         self.banco = Banco()
         self.botao=False
         self.build_ui()
         self.page.on_resize = lambda e: self.page.update()
         
-    def toggle_botao(self, e):
-        self.botao = not self.botao
+    def _arquivoSelecionado(self, e: ft.FilePickerResultEvent):
+        if e.files:
+            caminho = e.files[0].path
+            self.processarArquivo(caminho)  # função futura
+    
+    def processarArquivo(self,caminho):
+        arq = open(caminho,'r+')
+        qtdAdd=0
+        cursor=0
+        linhas = arq.readlines()
+        for linha in linhas:
+            cursor+=1
+            if linha == linhas[0]: continue
+            try:
+                linha=linha.strip().split(',')
+                nome = linha[0]
+                dominio = linha[1]
+                login = linha[2]
+                senha = linha[3]
+                self.inserirNovoReg(nome,dominio,login,senha)
+                qtdAdd+=1
+            except:
+                print(f'erro na linha {cursor} do arquivo!!!')
+        arq.close()
+        state.show_snackbar(f'{qtdAdd} registros foram adicionados')
+    
+    def exportarSenhas(self,e):
+        arq = open('senhas.csv','w')
+        senhas=self.banco.lerReg()
+        arq.write('name,url,username,password,note\n')
+        for senha in senhas:
+            arq.write(f'{senha[1]},{senha[2]},{senha[3]},{senha[4]},\n')
+        state.show_snackbar('senhas exportadas com sucesso, verifique a pasta do executavél')
+    
+    def gerarSenha(self,tamanho=16,maiusculas=True,minusculas=True,numeros=True,simbolos=True):
+        caracteres = ""
+        if maiusculas: caracteres += string.ascii_uppercase
+        if minusculas: caracteres += string.ascii_lowercase
+        if numeros: caracteres += string.digits
+        if simbolos: caracteres += "!@#$%&*_-+=?"
+        if not caracteres:
+            raise ValueError("Selecione pelo menos um tipo de caractere")
 
+        senha = ""
+        for i in range(tamanho):
+            caractere = secrets.choice(caracteres)
+            senha += caractere
+
+        return senha
+    
+    def toggleBotao(self, e='', detalhes=False):
+        if not detalhes:
+            self.botao = not self.botao
+        else:
+            self.botao=False
+        
         if self.botao:
             self.adicionar_btn.icon = ft.icons.REMOVE  
             self.adicionar_btn.bgcolor = ft.colors.RED_600 
@@ -24,7 +81,6 @@ class HomePage:
         #mostrar/ocultar pop
         if hasattr(self, 'pop_container'):
             self.pop_container.visible = self.botao
-        
         #atualiza o botão e pag
         self.adicionar_btn.update()  
         self.page.update() 
@@ -54,8 +110,8 @@ class HomePage:
                 usuario=site['usuario'],
                 title=site["titulo"],
                 domain=f"{site["dominio"].lower()}",
-                on_click=lambda id, title,dominio, usuario, senha: self.abrir_detalhes(id, title, dominio, usuario, senha),
-                delete=self.deletar_registro
+                on_click=lambda id, title,dominio, usuario, senha: self.abrirDetalhes(id, title, dominio, usuario, senha),
+                delete=self.deletarRegistro
             ).build()
 
             self.grid.controls.append(card)
@@ -75,17 +131,19 @@ class HomePage:
             icon=ft.icons.ADD,
             icon_color=ft.colors.WHITE,
             bgcolor=ft.colors.BLUE_900,
-            on_click=self.toggle_botao,
-            alignment=ft.alignment.center_right
+            on_click=self.toggleBotao,
+            alignment=ft.alignment.center_right,
+            tooltip='adicionar'
         )
         
         #botão logout
         self.logout_btn = ft.IconButton(
             icon=ft.icons.LOGOUT_OUTLINED,
-            icon_color=ft.colors.RED_700,
-            bgcolor=ft.colors.BLACK38,
+            icon_color=ft.colors.WHITE,
+            bgcolor=ft.colors.RED_700,
             on_click=self.logout,
-            alignment=ft.alignment.center_left
+            alignment=ft.alignment.center_left,
+            tooltip='sair'
         )
 
         #botão lixeira
@@ -95,6 +153,17 @@ class HomePage:
             icon_color=ft.colors.GREY_200,
             bgcolor=ft.colors.GREY_700,
             on_click=self.historico,
+            tooltip='ir para lixeira'
+        ),margin=ft.margin.only(right=12),alignment=ft.alignment.center_right)
+        
+        #botão exportar
+        self.exportar = ft.Container(
+            content=ft.IconButton(
+            icon=ft.icons.SAVE_ALT,
+            icon_color=ft.colors.WHITE,
+            bgcolor=ft.colors.GREEN_700,
+            on_click=self.exportarSenhas,
+            tooltip='exportar em csv'
         ),margin=ft.margin.only(right=12),alignment=ft.alignment.center_right)
         
         #conteudo
@@ -103,14 +172,14 @@ class HomePage:
                 ft.ResponsiveRow([self.barra_pesquisa],alignment=ft.MainAxisAlignment.CENTER),
                 ft.Text(f"Senhas de {self.banco.login}", size=28, weight="bold"),
                 self.grid,
-                ft.Row([self.logout_btn, ft.Container(expand=True), self.lixeira, self.adicionar_btn],alignment=ft.MainAxisAlignment.SPACE_BETWEEN,spacing=40)
+                ft.Row([self.logout_btn, ft.Container(expand=True), self.exportar, self.lixeira, self.adicionar_btn],alignment=ft.MainAxisAlignment.SPACE_BETWEEN,spacing=40)
             ], expand=True),
             expand=True,
             padding=20,
             visible=True
         )
         
-        self.pop_up_inserir()  # 1. Criar o popup
+        self.popUpInserir()  # 1. Criar o popup
         self.content.content.controls.insert(-1, self.pop_container)  # 2. Adicionar ao layout
         
         self.main_stack = ft.Stack([
@@ -127,7 +196,7 @@ class HomePage:
             ]
         )
         
-    def pop_up_inserir(self):
+    def popUpInserir(self):
         self.titulo_input = ft.TextField(
             label="Titulo",
             width=250,
@@ -151,7 +220,9 @@ class HomePage:
             label="Senha",
             width=250,
             autofocus=True,
-            prefix_icon=ft.icons.LOCK
+            prefix_icon=ft.icons.LOCK,
+            password=True,
+            can_reveal_password=True
         )
         
         self.pop_container = ft.Container(
@@ -160,28 +231,55 @@ class HomePage:
                 self.dominio_input,
                 self.usuario_input,
                 self.senha_input,
-                ft.ElevatedButton("inserir", 
-                    icon=ft.icons.UPLOAD, 
+
+                ft.ElevatedButton(
+                    "Inserir",
+                    icon=ft.icons.UPLOAD,
+                    width=250,
+                    height=45,
                     on_click=lambda e: self.inserirNovoReg(
                         self.titulo_input.value,
                         self.dominio_input.value,
                         self.usuario_input.value,
                         self.senha_input.value
-                    ), 
-                    width=250, 
+                    )
+                ),
+                
+                ft.ElevatedButton(
+                    "Gerar senha",
+                    icon=ft.icons.AUTO_FIX_HIGH,
+                    width=250,
                     height=45,
+                    tooltip="Gerar senha segura automaticamente",
+                    on_click=lambda e: self.gerarSenhaNoCampo()
+                ),
+
+
+                ft.ElevatedButton(
+                    "Exportar do Google",
+                    icon=ft.icons.ATTACH_FILE,
+                    width=250,
+                    height=45,
+                    on_click=lambda e: self.file_picker.pick_files(
+                        allow_multiple=False
+                    )
                 )
             ]),
-            width=280,  
-            height=350,
+            width=280,
+            height=460,  # aumentei pra caber tudo
             right=15,
             bottom=80,
-            bgcolor=ft.colors.SURFACE_VARIANT,  # COR SÓLIDA
+            bgcolor=ft.colors.SURFACE_VARIANT,
             padding=20,
             border_radius=10,
             border=ft.border.all(1, ft.colors.OUTLINE),
             visible=self.botao
         )
+    
+    def gerarSenhaNoCampo(self):
+        nova = self.gerarSenha()   # aquela função com secrets
+        self.senha_input.value = nova
+        self.page.update()
     
     def criarStack(self, id='', titulo='', dominio='', usuario='', senha='',show=False):
         self.tituloStack_input = ft.ResponsiveRow([
@@ -196,8 +294,7 @@ class HomePage:
             ft.Container(
                 content=ft.IconButton(
                     icon=ft.icons.CONTENT_COPY,
-                    bgcolor=ft.colors.GREY_600,
-                    icon_color=ft.colors.WHITE,
+                    icon_color=ft.colors.GREEN,
                     icon_size=20,
                     on_click=lambda e, s=titulo: self.copiar(s)
                 ),
@@ -221,8 +318,7 @@ class HomePage:
             ft.Container(
                 content=ft.IconButton(
                     icon=ft.icons.CONTENT_COPY,
-                    bgcolor=ft.colors.GREY_600,
-                    icon_color=ft.colors.WHITE,
+                    icon_color=ft.colors.GREEN,
                     icon_size=20,
                     on_click=lambda e, s=dominio: self.copiar(s)
                 ),
@@ -246,8 +342,7 @@ class HomePage:
             ft.Container(
                 content=ft.IconButton(
                     icon=ft.icons.CONTENT_COPY,
-                    bgcolor=ft.colors.GREY_600,
-                    icon_color=ft.colors.WHITE,
+                    icon_color=ft.colors.GREEN,
                     icon_size=20,
                     on_click=lambda e, s=usuario: self.copiar(s)
                 ),
@@ -259,47 +354,55 @@ class HomePage:
             )
         ], vertical_alignment=ft.CrossAxisAlignment.CENTER)
         
-        self.senhaStack_input = ft.ResponsiveRow([
-            ft.TextField(
-                label="senha",
-                value=f'{senha}',
-                autofocus=True,
-                prefix_icon=ft.icons.LOCK,
-                col={"sm": 9, "md": 11},
-                width=None,
-                password=True,
-                can_reveal_password=True
-            ),
-            ft.Container(
-                content=ft.IconButton(
-                    icon=ft.icons.CONTENT_COPY,
-                    bgcolor=ft.colors.GREY_600,
-                    icon_color=ft.colors.WHITE,
-                    icon_size=20,
-                    on_click=lambda e, s=senha: self.copiar(s)
+        self.senhaStack_input = ft.ResponsiveRow(
+            [
+                ft.TextField(
+                    label="Senha",
+                    value=senha,
+                    autofocus=True,
+                    prefix_icon=ft.icons.LOCK,
+                    col={"sm": 8, "md": 9},
+                    password=True,
+                    can_reveal_password=True,
                 ),
-                col={"sm": 1},
-                width=120,
-                height=40,
-               
-                padding=ft.padding.only(left=15),
-            )
-        ], vertical_alignment=ft.CrossAxisAlignment.CENTER)
+
+                ft.IconButton(
+                    icon=ft.icons.AUTO_FIX_HIGH,
+                    tooltip="Gerar senha segura",
+                    col={"sm": 2, "md": 1},
+                    icon_color=ft.colors.BLUE,
+                    on_click=lambda e: self.gerarAtualizarSenha(),
+                ),
+
+                ft.IconButton(
+                    icon=ft.icons.CONTENT_COPY,
+                    tooltip="Copiar senha",
+                    col={"sm": 2, "md": 1},
+                    icon_color=ft.colors.GREEN,
+                    on_click=lambda e: self.copiar(
+                        self.senhaStack_input.controls[0].value
+                    ),
+                ),
+                
+            ],
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
         
         #botão de salvar
         self.salvar_btn = ft.ElevatedButton(
             "salvar",
             icon=ft.icons.SAVE,
             on_click=lambda e: self.salvarReg(e,id),
-            bgcolor=ft.colors.GREEN_300,
+            bgcolor=ft.colors.GREEN_500,
             color=ft.colors.WHITE,
             icon_color=ft.colors.WHITE
         )
         
         
         self.botaoSair_btn = ft.IconButton(
-            icon=ft.icons.LOGOUT,
+            icon=ft.icons.ARROW_BACK_OUTLINED,
             icon_color=ft.colors.WHITE,
+            bgcolor=ft.colors.BLUE_700,
             on_click=self.sair,
             alignment=ft.alignment.top_left
         )
@@ -340,17 +443,23 @@ class HomePage:
         )
         return pilha
     
-    def abrir_detalhes(self, id,titulo,dominio, usuario, senha):
+    def gerarAtualizarSenha(self):
+        nova = self.gerarSenha()
+        self.senhaStack_input.controls[0].value = nova
+        self.page.update()
+
+    def abrirDetalhes(self, id,titulo,dominio, usuario, senha):
         state.show_snackbar(f"Detalhes do {titulo}")
         overlay = self.criarStack(id, titulo,dominio, usuario=usuario, senha=senha,show=True)
         self.main_stack.controls.append(overlay)
         self.content.visible = False
+        self.toggleBotao(detalhes=True)
         self.page.update()      
 
     def copiar(self, conteudo):
         self.page.set_clipboard(conteudo)
     
-    def atualizar_grid(self,condicao=False,pesquisa=''):
+    def atualizarGrid(self,condicao=False,pesquisa=''):
         """Atualiza o grid com os dados do banco"""
         # 1. Limpar os cards atuais
         self.grid.controls.clear()
@@ -374,9 +483,9 @@ class HomePage:
                 usuario=site['usuario'],
                 senha=site['senha'],
                 title=site["titulo"],
-                on_click=lambda id, title,dominio, usuario, senha: self.abrir_detalhes(id, title,dominio, usuario, senha),
+                on_click=lambda id, title,dominio, usuario, senha: self.abrirDetalhes(id, title,dominio, usuario, senha),
                 domain=f"{site['dominio'].lower()}",
-                delete=self.deletar_registro
+                delete=self.deletarRegistro
             ).build()
             self.grid.controls.append(card)
         
@@ -400,7 +509,7 @@ class HomePage:
             self.adicionar_btn.icon = ft.icons.ADD
             self.adicionar_btn.bgcolor=ft.colors.BLUE_900
             self.adicionar_btn.update()
-            self.atualizar_grid()
+            self.atualizarGrid()
             
             self.page.update()
         else:
@@ -414,7 +523,7 @@ class HomePage:
         self.banco.update(titulo=novo_titulo,dominio=novo_dominio,usuario=novo_usuario,senha=novo_senha,id=id)
         self.sair(e)
         state.show_snackbar('Registro salvo!!!')
-        self.atualizar_grid()
+        self.atualizarGrid()
         
     def sair(self, e):  
         self.content.visible = True
@@ -423,19 +532,19 @@ class HomePage:
             self.main_stack.controls.pop() 
         self.page.update()
     
-    def deletar_registro(self, registro_id):
+    def deletarRegistro(self, registro_id):
         """Mandar para a lixeira um registro específico"""
         try:
             self.banco.deletarReg(registro_id)
             state.show_snackbar(f"'{registro_id}' foi para lixeira!")
-            self.atualizar_grid() 
+            self.atualizarGrid() 
         except Exception as e:
             print(f"Erro: {e}")
             state.show_snackbar(f"Erro ao  mandar '{registro_id}' para a lixeira")
     
     def pesquisar(self,e):
         pesquisa = self.barra_pesquisa.value
-        self.atualizar_grid(True,pesquisa)
+        self.atualizarGrid(True,pesquisa)
         
     def logout(self,e):
         self.banco.logout()

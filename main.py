@@ -8,9 +8,9 @@ def main(page: ft.Page):
     page.window.maximized=True
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.window.min_width = 800 
+    page.window.min_width = 800
     page.window.min_height = 600
-    #configura o estado globala
+    #configura o estado global
     state.set_page(page)
     
     #rotas

@@ -42,7 +42,8 @@ class PasswordCard:
                         size=16,
                         weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER,
-                        overflow=ft.TextOverflow.FADE
+                        overflow=ft.TextOverflow.FADE,
+                        max_lines=1  
                     ),
                     ft.Row(
                         controls=[
