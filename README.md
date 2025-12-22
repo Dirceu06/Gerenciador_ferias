@@ -1,7 +1,7 @@
 # Gerenciador de Senhas 🔐
 
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
-![Flet](https://img.shields.io/badge/flet-0.28.3-orange.svg)
+![Flet](https://img.shields.io/badge/flet-0.25.1-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Security](https://img.shields.io/badge/security-A+-brightgreen.svg)
 
