@@ -109,7 +109,7 @@ app/
 
 ---
 
-## 🖼️ Screenshots
+## Algumas imagens do projeto
 
 ![screenshot](app/assets/captura1.png)
 ![screenshot](app/assets/captura2.png)
